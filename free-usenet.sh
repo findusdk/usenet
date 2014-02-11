@@ -24,10 +24,10 @@ done
 )
 tempmail=$(tr -dc a-z0-9 < /dev/urandom | head -c 10 | xargs)$(echo "$domains" | shuf -n 1) #email will be 10 random charecters and a random domain from the domainlist
 if [ -z $tempmail ];then
-	echo "$(date "+%-d-%-m-%Y %T") [ERROR] 	An email address was NOT created." >> $log
+	echo "$(date "+%d-%m-%Y %T") [ERROR] 	An email address was NOT created." >> $log
 	exit
 else
-	echo "$(date "+%-d-%-m-%Y %T") [OK] 	An email address was created: "$tempmail"" >> $log
+	echo "$(date "+%d-%m-%Y %T") [OK] 	An email address was created: "$tempmail"" >> $log
 fi
 
 #generate tings we need to registrer for an account
@@ -35,7 +35,7 @@ randomname=$(shuf -n 1 $namelist | cut -d',' -f1),$(shuf -n 1 $namelist | cut -d
 user=$(tr -dc 0-9 < /dev/urandom | head -c 3 | xargs)$(echo "$randomname" | cut -d',' -f1 | tr '[:upper:]' '[:lower:]')\
 $(tr -dc 0-9 < /dev/urandom | head -c 2 | xargs)$(echo "$randomname" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]') #make username with three random digits, first name, two random digits and last name
 pass=$(tr -dc a-z0-9 < /dev/urandom | head -c 8 | xargs) #Make eight character password
-echo "$(date "+%-d-%-m-%Y %T") [OK] 	Credentials created: user \""$user"\" pass \""$pass"\"" >> $log
+echo "$(date "+%d-%m-%Y %T") [OK] 	Credentials created: user \""$user"\" pass \""$pass"\"" >> $log
 
 #create command script for use with account registration on hitnews.com, using the temporary email address, user and password
 echo "$(
@@ -98,18 +98,18 @@ echo "key ^J"
 echo "key Q"
 )" > $lynxscript
 if [ -z "$lynxscript" ];then
-	echo "$(date "+%-d-%-m-%Y %T") [ERROR] 	A lynx-script has NOT been created" >> $log
+	echo "$(date "+%d-%m-%Y %T") [ERROR] 	A lynx-script has NOT been created" >> $log
 else
-	echo "$(date "+%-d-%-m-%Y %T") [OK] 	A lynx-script has been created" >> $log
+	echo "$(date "+%d-%m-%Y %T") [OK] 	A lynx-script has been created" >> $log
 fi
 
 #use the generated script to register for a free account
 lynx -useragent="$useragent" -cmd_script="$lynxscript" https://member.hitnews.com/signup.php > /dev/null 2>&1
 OUT=$?
 if [ $OUT -eq 0 ];then
-	echo "$(date "+%-d-%-m-%Y %T") [OK] 	Lynx and the lynx-script was executed successfully" >> $log
+	echo "$(date "+%d-%m-%Y %T") [OK] 	Lynx and the lynx-script was executed successfully" >> $log
 else
-	echo "$(date "+%-d-%-m-%Y %T") [ERROR]	Lynx and the lynx-script failed." >> $log
+	echo "$(date "+%d-%m-%Y %T") [ERROR]	Lynx and the lynx-script failed." >> $log
 	exit
 fi
 rm $lynxscript
@@ -120,31 +120,31 @@ sleep 10
 #get activation link from email sent by hitnews.com
 md5mail=$(echo -n "$tempmail" | md5sum | cut -d' ' -f1) #calculates md5sum for tempmail used when checking the temp-mail.ru inbox
 activationlink=$(wget -q -O - http://api.temp-mail.ru/request/mail/id/"$md5mail"/format/php/ | grep signup.php)
-echo "$(date "+%-d-%-m-%Y %T") [INFO]	Activation-link for this account is: "$activationlink"" >> $log
+echo "$(date "+%d-%m-%Y %T") [INFO]	Activation-link for this account is: "$activationlink"" >> $log
 
 #visit the link to activate the account
 wget -q -O - --user-agent="$useragent" "$activationlink" > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
-	echo "$(date "+%-d-%-m-%Y %T") [OK]		Account was succesfully activated." >> $log
+	echo "$(date "+%d-%m-%Y %T") [OK]		Account was succesfully activated." >> $log
 else
-	echo "$(date "+%-d-%-m-%Y %T") [ERROR] 	Account could NOT be activated." >> $log
+	echo "$(date "+%d-%m-%Y %T") [ERROR] 	Account could NOT be activated." >> $log
 	exit
 fi
 
 #There is some waiting time, from using the activation link, to the account is ready for use.
 #We check every 10th minute, to see if the account is ready.
 until [ "$((echo "authinfo user $user"; echo "authinfo pass $pass"; sleep 1; echo "quit") | telnet free.hitnews.com 119 | sed -n '3{p;q;}' | cut -d' ' -f1)" = "281" ];do
-	echo "$(date "+%-d-%-m-%Y %T") [INFO]	Account not active yet. Waiting 10 minutes before retry" >> $log
+	echo "$(date "+%d-%m-%Y %T") [INFO]	Account not active yet. Waiting 10 minutes before retry" >> $log
 	sleep 10m
 done
-echo "$(date "+%-d-%-m-%Y %T") [OK]		Account is now active. Adding new username and password to "$nzbgetcnf"" >> $log
+echo "$(date "+%d-%m-%Y %T") [OK]		Account is now active. Adding new username and password to "$nzbgetcnf"" >> $log
 
 #change account information in downloader config-file with account creation date, and the new user and password
-date=$(date "+%T %-d-%-m-%Y")
+date=$(date "+%T %d-%m-%Y")
 sed -i "s/^\(Server5\.Username\s*=\s*\).*\$/\1$user/" $nzbgetcnf
 sed -i "s/^\(Server5\.Password\s*=\s*\).*\$/\1$pass/" $nzbgetcnf
 sed -i "s/^\(Server5\.Name\s*=\s*\).*\$/\1Hitnews ($date)/" $nzbgetcnf
 
-echo "$(date "+%-d-%-m-%Y %T") [OK]		Restarting NZBget." >> $log
+echo "$(date "+%d-%m-%Y %T") [OK]		Restarting NZBget." >> $log
 $restart >/dev/null 2>&1

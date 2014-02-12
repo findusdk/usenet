@@ -1,4 +1,4 @@
-nzbget.conf
+*.conf
 *.log
-nzbget.conf.new
+*.new
 *.bak

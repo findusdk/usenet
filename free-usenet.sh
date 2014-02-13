@@ -126,9 +126,9 @@ echo "$(date "+%d-%m-%Y %T") [INFO]	Activation-link for this account is: "$activ
 wget -q -O - --user-agent="$useragent" "$activationlink" > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
-	echo "$(date "+%d-%m-%Y %T") [OK]		Account was succesfully activated." >> $log
+	echo "$(date "+%d-%m-%Y %T") [OK]	Account was succesfully activated." >> $log
 else
-	echo "$(date "+%d-%m-%Y %T") [ERROR] 	Account could NOT be activated." >> $log
+	echo "$(date "+%d-%m-%Y %T") [ERROR] Account could NOT be activated." >> $log
 	exit
 fi
 
@@ -138,7 +138,7 @@ until [ "$((echo "authinfo user $user"; echo "authinfo pass $pass"; sleep 1; ech
 	echo "$(date "+%d-%m-%Y %T") [INFO]	Account not active yet. Waiting 10 minutes before retry" >> $log
 	sleep 10m
 done
-echo "$(date "+%d-%m-%Y %T") [OK]		Account is now active. Adding new username and password to "$nzbgetcnf"" >> $log
+echo "$(date "+%d-%m-%Y %T") [OK]	Account is now active. Adding new username and password to "$nzbgetcnf"" >> $log
 
 #change account information in downloader config-file with account creation date, and the new user and password
 date=$(date "+%T %d-%m-%Y")
@@ -146,5 +146,5 @@ sed -i "s/^\(Server5\.Username\s*=\s*\).*\$/\1$user/" $nzbgetcnf
 sed -i "s/^\(Server5\.Password\s*=\s*\).*\$/\1$pass/" $nzbgetcnf
 sed -i "s/^\(Server5\.Name\s*=\s*\).*\$/\1Hitnews ($date)/" $nzbgetcnf
 
-echo "$(date "+%d-%m-%Y %T") [OK]		Restarting NZBget." >> $log
+echo "$(date "+%d-%m-%Y %T") [OK]	Restarting NZBget." >> $log
 $restart >/dev/null 2>&1
